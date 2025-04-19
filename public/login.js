@@ -15,7 +15,8 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     alert(data.message);
     if (res.ok) {
       localStorage.setItem('loggedIn', true);
-      localStorage.setItem('userId', data.userId);
+      localStorage.setItem('token', data.token);
+
       window.location.href = 'expense.html';
     }
   } catch (err) {

@@ -27,6 +27,12 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'signup.html'));
 });
 
+
+
+User.hasMany(Expense);
+Expense.belongsTo(User);
+
+
 sequelize
   .sync()
   .then(() => {
