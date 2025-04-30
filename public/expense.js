@@ -35,9 +35,40 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+
+const buyBtn = document.getElementById('buyPremiumBtn');
+    if (buyBtn) {
+        buyBtn.addEventListener('click', async () => {
+            const token = localStorage.getItem('token');
+  
+            try {
+                const response = await fetch('http://localhost:5000/purchase/premiummembership', {
+                    method: 'GET',
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+  
+                const data = await response.json();
+                if (data.paymentLink) {
+                    window.location.href = data.paymentLink;
+                } else {
+                    alert('Failed to start premium purchase');
+                }
+            } catch (error) {
+                console.error('Premium buy error:', error);
+                alert('Error while purchasing premium membership.');
+            }
+        });
+    } else {
+        console.warn('Buy Premium button not found!');
+    }
+
+
+
 async function fetchExpenses() {
     const token = localStorage.getItem('token');
-    console.log("Fetched token:", token); // ADD THIS to debug
+    console.log("Fetched token:", token); 
 
     try {
         const response = await axios.get('http://localhost:5000/api/expenses', {
@@ -58,27 +89,18 @@ function addExpenseToList(expense) {
     const item = document.createElement('div');
     item.textContent = `${expense.amount} - ${expense.description} - ${expense.category}`;
 
-    const editBtn = document.createElement('button');
-    editBtn.textContent = 'Edit';
-    editBtn.onclick = () => {
-        document.getElementById('amount').value = expense.amount;
-        document.getElementById('description').value = expense.description;
-        document.getElementById('category').value = expense.category;
-        deleteExpense(expense.id, item); // delete old, then resubmit as new
-    };
-
+    
     const deleteBtn = document.createElement('button');
     deleteBtn.textContent = 'Delete';
     deleteBtn.onclick = () => deleteExpense(expense.id, item);
 
-    item.appendChild(editBtn);
     item.appendChild(deleteBtn);
     expenseList.appendChild(item);
 }
 
 function displayExpenses(expenses) {
     const expenseList = document.getElementById('expense-list');
-    expenseList.innerHTML = ''; // Clear existing
+    expenseList.innerHTML = ''; 
 
     expenses.forEach(expense => {
         addExpenseToList(expense);
@@ -98,10 +120,33 @@ async function deleteExpense(id, element) {
             headers: { Authorization: `Bearer ${token}` }
         });
 
-        if (element) element.remove(); // remove from UI
+        if (element) element.remove(); 
     } catch (error) {
         console.error('Delete error:', error);
         alert('Failed to delete expense. Check authentication.');
     }
 }
 
+
+
+
+
+document.getElementById('show-leaderboard').addEventListener('click', async () => {
+  try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get('http://localhost:5000/premium/leaderboard', {
+          headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const leaderboardList = document.getElementById('leaderboard-list');
+      leaderboardList.innerHTML = '';
+
+      res.data.forEach(user => {
+          const li = document.createElement('li');
+          li.textContent = `${user.name}: ₹${user.totalExpense}`;
+          leaderboardList.appendChild(li);
+      });
+  } catch (error) {
+      console.error('Leaderboard error:', error);
+  }
+});

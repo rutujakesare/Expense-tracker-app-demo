@@ -14,8 +14,7 @@ exports.createUser = async (req, res) => {
       return res.status(409).json({ message: 'Email already registered' });
     }
 
-    // 🔐 Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10); // 10 salt rounds
+    const hashedPassword = await bcrypt.hash(password, 10); 
 
     const newUser = await User.create({ name, email, password: hashedPassword });
     res.status(201).json({ message: 'User created successfully', user: newUser });
@@ -51,7 +50,7 @@ exports.loginUser = async (req, res) => {
 
     if (isPasswordMatch) {
       const token = generateAccessToken(user.id, user.name);
-      return res.status(200).json({ message: 'User login successful', token, userId: user.id }); // add userId
+      return res.status(200).json({ message: 'User login successful', token, userId: user.id }); 
     } else {
       return res.status(401).json({ message: 'Incorrect password' });
     }

@@ -2,35 +2,42 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
+require('dotenv').config();
 
 const sequelize = require('./util/database');
+const app = express();
+
 const User = require('./models/user');
 const Expense = require('./models/expense');
+const Order = require('./models/order');
 
 const userRoutes = require('./routes/userRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
+const purchaseRoutes = require('./routes/purchaseRoutes');
 
-const app = express();
+
 
 app.use(cors());
 app.use(bodyParser.json());
 
-// Static frontend files
+
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Routes
+
 app.use('/api', userRoutes);
 app.use('/api/expenses', expenseRoutes);
+app.use('/purchase', purchaseRoutes);
 
-// Home page
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'signup.html'));
 });
 
 
-
 User.hasMany(Expense);
 Expense.belongsTo(User);
+
+User.hasMany(Order);
+Order.belongsTo(User);
 
 
 sequelize
@@ -41,4 +48,3 @@ sequelize
     });
   })
   .catch(err => console.error('Database sync error:', err));
-

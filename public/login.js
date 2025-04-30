@@ -5,24 +5,31 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   const password = document.getElementById('password').value;
 
   try {
-    const res = await fetch('/api/login', {
+    const response = await fetch('http://localhost:5000/api/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password })
     });
 
-    const data = await res.json();
-    alert(data.message);
-    if (res.ok) {
-      localStorage.setItem('loggedIn', true);
+    const data = await response.json();
+
+    if (response.ok) {
+     
       localStorage.setItem('token', data.token);
 
-      window.location.href = 'expense.html';
+      alert('Login successful!');
+      window.location.href = 'expense.html'; 
+    } else {
+      alert(data.error || 'Login failed');
     }
   } catch (err) {
-    alert('Login failed');
+    console.error('Login Error:', err);
+    alert('An error occurred while logging in');
   }
 });
+
 
 
 

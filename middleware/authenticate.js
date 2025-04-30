@@ -8,8 +8,8 @@ module.exports = (req, res, next) => {
       return res.status(401).json({ error: 'No token provided' });
     }
 
-    const token = authHeader.split(' ')[1]; // Get token after "Bearer "
-    const decoded = jwt.verify(token, 'your_secret_key'); // Use your actual secret
+    const token = authHeader.split(' ')[1]; 
+    const decoded = jwt.verify(token, 'your_secret_key'); 
     req.user = decoded;
     next();
   } catch (err) {

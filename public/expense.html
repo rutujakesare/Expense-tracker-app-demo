@@ -9,6 +9,7 @@
     
    
      <title>Expense Tracker</title>
+     <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
 </head>
 <body>
     <div class="container mt-5">
@@ -31,12 +32,19 @@
         </select>
         
         <button type="submit">Add Expense</button>
+        <button id="buyPremiumBtn">Buy Premium</button>
+
+        <button id="show-leaderboard">Show Leaderboard</button>
+        <ul id="leaderboard-list"></ul>
+        
     </form>
     <div>
     <h2 class="mt-4">Expense List</h2>
     <ul id="expense-list" class="list-group mt-2"></ul>
     </div>
 </div>
+
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
 <script src="expense.js"></script>
  
