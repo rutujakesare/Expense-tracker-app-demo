@@ -36,33 +36,64 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-const buyBtn = document.getElementById('buyPremiumBtn');
-    if (buyBtn) {
-        buyBtn.addEventListener('click', async () => {
-            const token = localStorage.getItem('token');
-  
-            try {
-                const response = await fetch('http://localhost:5000/purchase/premiummembership', {
-                    method: 'GET',
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-  
-                const data = await response.json();
-                if (data.paymentLink) {
-                    window.location.href = data.paymentLink;
-                } else {
-                    alert('Failed to start premium purchase');
-                }
-            } catch (error) {
-                console.error('Premium buy error:', error);
-                alert('Error while purchasing premium membership.');
-            }
-        });
-    } else {
-        console.warn('Buy Premium button not found!');
+
+const buyBtn = document.getElementById("buyPremiumBtn");
+
+if (buyBtn) {
+  buyBtn.addEventListener("click", async () => {
+    const token = localStorage.getItem("token");
+
+    try {
+      const response = await fetch("http://localhost:5000/payment/buy-premium", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const { paymentSessionId, orderId } = await response.json();
+
+      if (!paymentSessionId || !orderId) {
+        alert("Failed to fetch payment session.");
+        return;
+      }
+
+      const checkoutOptions = {
+        paymentSessionId,
+        redirectTarget: "_modal",
+      };
+
+      const result = await cashfree.checkout(checkoutOptions);
+
+      if (result.paymentDetails) {
+        const statusResponse = await fetch(
+          `http://localhost:5000/payment/payment-status/${orderId}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const statusData = await statusResponse.json();
+
+        alert("Your payment is: " + statusData.orderStatus);
+
+        if (statusData.orderStatus === "SUCCESS") {
+          alert("🎉 You are now a premium user!");
+          // Reload or update UI
+        }
+      }
+    } catch (error) {
+      console.error("Premium buy error:", error);
+      alert("Something went wrong during payment.");
     }
+  });
+}
+
+
+
 
 
 

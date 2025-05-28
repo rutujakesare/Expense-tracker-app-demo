@@ -1,19 +1,21 @@
+require('dotenv').config();
+
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
-require('dotenv').config();
 
 const sequelize = require('./util/database');
 const app = express();
 
 const User = require('./models/user');
 const Expense = require('./models/expense');
-const Order = require('./models/order');
+const Payment = require('./models/payment');
 
 const userRoutes = require('./routes/userRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
-const purchaseRoutes = require('./routes/purchaseRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 
 
 
@@ -26,7 +28,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api', userRoutes);
 app.use('/api/expenses', expenseRoutes);
-app.use('/purchase', purchaseRoutes);
+app.use('/payment', paymentRoutes);
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'signup.html'));
@@ -36,8 +38,8 @@ app.get('/', (req, res) => {
 User.hasMany(Expense);
 Expense.belongsTo(User);
 
-User.hasMany(Order);
-Order.belongsTo(User);
+User.hasMany(Payment);
+Payment.belongsTo(User);
 
 
 sequelize
