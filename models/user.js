@@ -19,6 +19,14 @@ const User = sequelize.define('User', {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
+  totalExpense: {
+  type: DataTypes.INTEGER,
+  allowNull: false,
+  defaultValue: 0
+}
+
 });
 
 module.exports = User;
+
+

@@ -24,10 +24,7 @@ const Payment = sequelize.define('Payment', {
     allowNull: false,
     defaultValue: 'PENDING'
   },
-//   userId: { 
-//     type: DataTypes.INTEGER,
-//     allowNull: false
-//   }
+
 });
 
 module.exports = Payment;

@@ -16,7 +16,7 @@ const Payment = require('./models/payment');
 const userRoutes = require('./routes/userRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
-
+const premiumRoutes = require('./routes/premiumRoutes');
 
 
 app.use(cors());
@@ -29,6 +29,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api', userRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/payment', paymentRoutes);
+app.use('/premium', premiumRoutes);
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'signup.html'));

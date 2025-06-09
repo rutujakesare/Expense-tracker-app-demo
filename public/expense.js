@@ -94,6 +94,12 @@ if (buyBtn) {
 
 
 
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  localStorage.removeItem('token'); // remove JWT token
+  alert('You have been logged out.');
+  window.location.href = 'login.html'; // redirect to login
+});
+
 
 
 
@@ -160,24 +166,38 @@ async function deleteExpense(id, element) {
 
 
 
+function showleaderBoard(data) {
+  const LeaderBoardList = document.getElementById('leaderboard-list');
+  LeaderBoardList.innerHTML = ''; // Clear previous content
 
+  const heading = document.createElement('h4');
+  heading.textContent = 'Leaderboard';
+  LeaderBoardList.appendChild(heading);
+
+  if (data.length === 0) {
+    const noData = document.createElement('li');
+    noData.textContent = 'No leaderboard data found';
+    LeaderBoardList.appendChild(noData);
+    return;
+  }
+
+  data.forEach(element => {
+    const leaderboardItem = document.createElement('li');
+    leaderboardItem.innerHTML = `Name: ${element.name} , Total Expense: ₹${element.totalExpense ?? 0}`;
+    LeaderBoardList.appendChild(leaderboardItem);
+  });
+}
 
 document.getElementById('show-leaderboard').addEventListener('click', async () => {
+  const token = localStorage.getItem('token');
   try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/premium/leaderboard', {
-          headers: { Authorization: `Bearer ${token}` }
-      });
-
-      const leaderboardList = document.getElementById('leaderboard-list');
-      leaderboardList.innerHTML = '';
-
-      res.data.forEach(user => {
-          const li = document.createElement('li');
-          li.textContent = `${user.name}: ₹${user.totalExpense}`;
-          leaderboardList.appendChild(li);
-      });
-  } catch (error) {
-      console.error('Leaderboard error:', error);
+    const response = await axios.get('http://localhost:5000/premium/showleaderboard', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    showleaderBoard(response.data);  // <- no error now
+  } catch (err) {
+    console.error('Error fetching leaderboard:', err);
+    alert('Failed to load leaderboard. Check console for details.');
   }
 });
+

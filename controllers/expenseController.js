@@ -16,6 +16,7 @@ exports.createExpense = async (req, res) => {
         const userId = req.user.userId;
 
         const newExpense = await Expense.create({ amount, description, category, UserId: userId }); 
+     
         res.json(newExpense);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -34,6 +35,8 @@ exports.deleteExpense = async (req, res) => {
         }
 
         await expense.destroy();
+     
+
         res.json({ message: 'Expense deleted' });
     } catch (err) {
         res.status(500).json({ error: err.message });
