@@ -1,41 +1,62 @@
 document.addEventListener('DOMContentLoaded', () => {
-    fetchExpenses();
+  checkPremiumStatus(); // Check and show premium UI
+  fetchExpenses();
 
-    document.getElementById('expense-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
+  document.getElementById('expense-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-        const amount = document.getElementById('amount').value;
-        const description = document.getElementById('description').value;
-        const category = document.getElementById('category').value;
+    const amount = document.getElementById('amount').value;
+    const description = document.getElementById('description').value;
+    const category = document.getElementById('category').value;
 
-        if (!amount || !description || !category) {
-            alert('Please fill all fields');
-            return;
-        }
+    if (!amount || !description || !category) {
+      alert('Please fill all fields');
+      return;
+    }
 
-        const newExpense = { amount, description, category };
+    const newExpense = { amount, description, category };
+    const token = localStorage.getItem('token');
 
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                alert('User not authenticated');
-                return;
-            }
+    try {
+      const response = await axios.post('http://localhost:5000/api/expenses', newExpense, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-            const response = await axios.post('http://localhost:5000/api/expenses', newExpense, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
-            addExpenseToList(response.data);
-            document.getElementById('expense-form').reset();
-        } catch (error) {
-            console.error('Add expense error:', error);
-            alert('Failed to add expense. Check authentication.');
-        }
-    });
+      addExpenseToList(response.data);
+      document.getElementById('expense-form').reset();
+      
+    } catch (error) {
+      console.error('Add expense error:', error);
+      alert('Failed to add expense. Check authentication.');
+    }
+  });
 });
 
+function checkPremiumStatus() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
 
+  const decodedToken = parseJwt(token);
+
+  if (decodedToken.isPremiumUser) {
+    showPremiumFeatures();
+  }
+}
+
+function parseJwt(token) {
+  const base64Url = token.split('.')[1];
+  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+    '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+  ).join(''));
+
+  return JSON.parse(jsonPayload);
+}
+
+function showPremiumFeatures() {
+  document.getElementById('show-leaderboard').style.display = 'inline-block';
+  document.getElementById('premiumMsg').style.display = 'block';
+}
 
 const buyBtn = document.getElementById("buyPremiumBtn");
 
@@ -82,7 +103,7 @@ if (buyBtn) {
 
         if (statusData.orderStatus === "SUCCESS") {
           alert("🎉 You are now a premium user!");
-          // Reload or update UI
+          showPremiumFeatures(); // ✅ Show leaderboard & message
         }
       }
     } catch (error) {
@@ -92,83 +113,66 @@ if (buyBtn) {
   });
 }
 
-
-
 document.getElementById('logoutBtn').addEventListener('click', () => {
-  localStorage.removeItem('token'); // remove JWT token
+  localStorage.removeItem('token');
   alert('You have been logged out.');
-  window.location.href = 'login.html'; // redirect to login
+  window.location.href = 'login.html';
 });
 
-
-
-
 async function fetchExpenses() {
-    const token = localStorage.getItem('token');
-    console.log("Fetched token:", token); 
+  const token = localStorage.getItem('token');
+  try {
+    const response = await axios.get('http://localhost:5000/api/expenses', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
 
-    try {
-        const response = await axios.get('http://localhost:5000/api/expenses', {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-
-        console.log("Expenses fetched:", response.data);
-        displayExpenses(response.data);
-    } catch (error) {
-        console.error("Fetch error:", error.response ? error.response.data : error.message);
-    }
+    displayExpenses(response.data);
+  } catch (error) {
+    console.error("Fetch error:", error.response ? error.response.data : error.message);
+  }
 }
 
-
 function addExpenseToList(expense) {
-    const expenseList = document.getElementById('expense-list');
+  const expenseList = document.getElementById('expense-list');
 
-    const item = document.createElement('div');
-    item.textContent = `${expense.amount} - ${expense.description} - ${expense.category}`;
+  const item = document.createElement('div');
+  item.textContent = `${expense.amount} - ${expense.description} - ${expense.category}`;
 
-    
-    const deleteBtn = document.createElement('button');
-    deleteBtn.textContent = 'Delete';
-    deleteBtn.onclick = () => deleteExpense(expense.id, item);
+  const deleteBtn = document.createElement('button');
+  deleteBtn.textContent = 'Delete';
+  deleteBtn.onclick = () => deleteExpense(expense.id, item);
 
-    item.appendChild(deleteBtn);
-    expenseList.appendChild(item);
+  item.appendChild(deleteBtn);
+  expenseList.appendChild(item);
 }
 
 function displayExpenses(expenses) {
-    const expenseList = document.getElementById('expense-list');
-    expenseList.innerHTML = ''; 
+  const expenseList = document.getElementById('expense-list');
+  expenseList.innerHTML = '';
 
-    expenses.forEach(expense => {
-        addExpenseToList(expense);
-    });
+  expenses.forEach(expense => {
+    addExpenseToList(expense);
+  });
 }
-
 
 async function deleteExpense(id, element) {
-    try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            alert('User not authenticated');
-            return;
-        }
+  const token = localStorage.getItem('token');
 
-        await axios.delete(`http://localhost:5000/api/expenses/${id}`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+  try {
+    await axios.delete(`http://localhost:5000/api/expenses/${id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
 
-        if (element) element.remove(); 
-    } catch (error) {
-        console.error('Delete error:', error);
-        alert('Failed to delete expense. Check authentication.');
-    }
+    if (element) element.remove();
+  } catch (error) {
+    console.error('Delete error:', error);
+    alert('Failed to delete expense. Check authentication.');
+  }
 }
-
-
 
 function showleaderBoard(data) {
   const LeaderBoardList = document.getElementById('leaderboard-list');
-  LeaderBoardList.innerHTML = ''; // Clear previous content
+  LeaderBoardList.innerHTML = '';
 
   const heading = document.createElement('h4');
   heading.textContent = 'Leaderboard';
@@ -194,10 +198,9 @@ document.getElementById('show-leaderboard').addEventListener('click', async () =
     const response = await axios.get('http://localhost:5000/premium/showleaderboard', {
       headers: { Authorization: `Bearer ${token}` }
     });
-    showleaderBoard(response.data);  // <- no error now
+    showleaderBoard(response.data);
   } catch (err) {
     console.error('Error fetching leaderboard:', err);
     alert('Failed to load leaderboard. Check console for details.');
   }
 });
-

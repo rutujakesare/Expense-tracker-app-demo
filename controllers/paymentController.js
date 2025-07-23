@@ -73,7 +73,7 @@ exports.updatePremiumStatus = async (req, res) => {
     if (latestStatus === "SUCCESS") {
       const user = await User.findByPk(payment.userId);
       if (user) {
-        user.isPremium = true;
+        user.isPremiumUser = true;
         await user.save();
       }
     }

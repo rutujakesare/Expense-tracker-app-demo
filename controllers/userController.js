@@ -29,7 +29,7 @@ exports.createUser = async (req, res) => {
 const jwt = require('jsonwebtoken');
 
 function generateAccessToken(id, name, isPremiumUser) {
-  return jwt.sign({ userId: id, name: name, isPremiumUser }, 'your_secret_key');
+  return jwt.sign({ userId: id, name: name, isPremiumUser: isPremiumUser }, 'your_secret_key');
 }
 
 exports.loginUser = async (req, res) => {
@@ -49,6 +49,7 @@ exports.loginUser = async (req, res) => {
     const isPasswordMatch = await bcrypt.compare(password, user.password);
 
     if (isPasswordMatch) {
+      
       const token = generateAccessToken(user.id, user.name, user.isPremiumUser);
       return res.status(200).json({ message: 'User login successful', token, userId: user.id }); 
     } else {
