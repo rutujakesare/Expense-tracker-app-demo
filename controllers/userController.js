@@ -51,7 +51,7 @@ exports.loginUser = async (req, res) => {
     if (isPasswordMatch) {
       
       const token = generateAccessToken(user.id, user.name, user.isPremiumUser);
-      return res.status(200).json({ message: 'User login successful', token, userId: user.id }); 
+      return res.status(200).json({ message: 'User login successful', token, userId: user.id, isPremiumUser: user.isPremiumUser }); 
     } else {
       return res.status(401).json({ message: 'Incorrect password' });
     }

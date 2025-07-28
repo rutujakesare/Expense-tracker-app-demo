@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  checkPremiumStatus(); // Check and show premium UI
+  checkPremiumStatus();
   fetchExpenses();
 
   document.getElementById('expense-form').addEventListener('submit', async (e) => {
@@ -24,7 +24,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       addExpenseToList(response.data);
       document.getElementById('expense-form').reset();
-      
+
+      const decodedToken = parseJwt(token);
+      if (decodedToken.isPremiumUser) {
+        const leaderboardRes = await axios.get("http://localhost:5000/premium/showleaderboard", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        showleaderBoard(leaderboardRes.data);
+      }
     } catch (error) {
       console.error('Add expense error:', error);
       alert('Failed to add expense. Check authentication.');
@@ -37,9 +44,14 @@ function checkPremiumStatus() {
   if (!token) return;
 
   const decodedToken = parseJwt(token);
-
   if (decodedToken.isPremiumUser) {
     showPremiumFeatures();
+
+    axios.get('http://localhost:5000/premium/showleaderboard', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    .then(res => showleaderBoard(res.data))
+    .catch(err => console.error('Error loading leaderboard:', err));
   }
 }
 
@@ -67,9 +79,7 @@ if (buyBtn) {
     try {
       const response = await fetch("http://localhost:5000/payment/buy-premium", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const { paymentSessionId, orderId } = await response.json();
@@ -103,7 +113,24 @@ if (buyBtn) {
 
         if (statusData.orderStatus === "SUCCESS") {
           alert("🎉 You are now a premium user!");
-          showPremiumFeatures(); // ✅ Show leaderboard & message
+
+          if (statusData.token) {
+            localStorage.setItem("token", statusData.token);
+            const decoded = parseJwt(statusData.token);
+
+            if (decoded.isPremiumUser) {
+              showPremiumFeatures();
+
+              const leaderboardRes = await fetch('http://localhost:5000/premium/showleaderboard', {
+                headers: { Authorization: `Bearer ${statusData.token}` }
+              });
+
+              const leaderboardData = await leaderboardRes.json();
+              showleaderBoard(leaderboardData);
+            }
+          } else {
+            alert("Payment succeeded, but no token returned.");
+          }
         }
       }
     } catch (error) {

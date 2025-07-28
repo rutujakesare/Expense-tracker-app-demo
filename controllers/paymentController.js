@@ -51,6 +51,10 @@ exports.buyPremium = async (req, res) => {
 };
 
 
+const jwt = require('jsonwebtoken');
+const generateAccessToken = (id, name, isPremiumUser) => {
+  return jwt.sign({ userId: id, name, isPremiumUser }, 'your_secret_key');
+};
 
 exports.updatePremiumStatus = async (req, res) => {
   const orderId = req.params.paymentSessionId;
@@ -75,6 +79,8 @@ exports.updatePremiumStatus = async (req, res) => {
       if (user) {
         user.isPremiumUser = true;
         await user.save();
+        const newToken = generateAccessToken(user.id, user.name, true);
+        return res.status(200).json({ orderStatus: latestStatus, token: newToken });
       }
     }
 
